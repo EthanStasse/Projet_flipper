@@ -341,7 +341,7 @@ Transform:
   m_GameObject: {fileID: 86084303}
   serializedVersion: 2
   m_LocalRotation: {x: -0.7660445, y: 0, z: 0, w: 0.64278764}
-  m_LocalPosition: {x: 2.1, y: -1.433, z: -14.47}
+  m_LocalPosition: {x: 2.15, y: -1.433, z: -14.47}
   m_LocalScale: {x: 0.2, y: 0.8, z: 0.2}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -360,7 +360,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AllerRetour
   distance: 0.8
-  vitesseAller: 15
+  vitesseAller: 16
   variationVitesse: 3
   vitesseRetour: 1
   direction: {x: 0, y: -1, z: 0}
@@ -583,7 +583,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 346078831}
   serializedVersion: 5
-  m_Mass: 1
+  m_Mass: 10
   m_LinearDamping: 0
   m_AngularDamping: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
@@ -689,7 +689,7 @@ Transform:
   m_GameObject: {fileID: 346078831}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.13, y: -1.01, z: -12.41}
+  m_LocalPosition: {x: 2.153, y: -1.01, z: -12.41}
   m_LocalScale: {x: 0.5828205, y: 0.5828205, z: 0.5828205}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1719,7 +1719,7 @@ Transform:
   m_GameObject: {fileID: 2087445372}
   serializedVersion: 2
   m_LocalRotation: {x: -0.08715578, y: 0, z: 0, w: 0.9961947}
-  m_LocalPosition: {x: 1.5, y: -0.1, z: -8}
+  m_LocalPosition: {x: 1.55, y: -0.1, z: -8}
   m_LocalScale: {x: 0.5, y: 1, z: 15}
   m_ConstrainProportionsScale: 0
   m_Children: []
