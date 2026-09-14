@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class AllerRetour : MonoBehaviour
+public class Script_ressort : MonoBehaviour
 {
     public float distance = 2f;
     public float vitesseAller = 3f;
