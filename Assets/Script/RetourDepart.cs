@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class ResetBalle : MonoBehaviour
+public class RetourDepart : MonoBehaviour
 {
     public Transform pointDeDepart;
 
