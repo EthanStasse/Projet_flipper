@@ -360,8 +360,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AllerRetour
   distance: 0.8
-  vitesseAller: 16
-  variationVitesse: 3
+  vitesseAller: 15
+  variationVitesse: 5
   vitesseRetour: 1
   direction: {x: 0, y: -1, z: 0}
 --- !u!54 &86084309
@@ -2261,7 +2261,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0.5, y: 0.5, z: 0.5, w: 0.5}
   m_LocalPosition: {x: 4, y: -1.03, z: -13.4}
-  m_LocalScale: {x: 0.05, y: 0.8, z: 0.05}
+  m_LocalScale: {x: 0.05, y: 0.7, z: 0.05}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
