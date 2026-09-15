@@ -1598,7 +1598,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1405900295115806147, guid: 3f240e654c6b36e48b6f8f888de0e0c2, type: 3}
       propertyPath: m_Name
-      value: Bumper2
+      value: Bumper1
       objectReference: {fileID: 0}
     - target: {fileID: 1405900296305875865, guid: 3f240e654c6b36e48b6f8f888de0e0c2, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
@@ -1720,7 +1720,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1405900295115806147, guid: 3f240e654c6b36e48b6f8f888de0e0c2, type: 3}
       propertyPath: m_Name
-      value: Bumper1
+      value: Bumper
       objectReference: {fileID: 0}
     - target: {fileID: 1405900296305875865, guid: 3f240e654c6b36e48b6f8f888de0e0c2, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
