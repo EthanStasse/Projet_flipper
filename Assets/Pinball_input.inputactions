@@ -1,0 +1,99 @@
+{
+    "version": 1,
+    "name": "Pinball_input",
+    "maps": [
+        {
+            "name": "inputs",
+            "id": "1063f726-7127-4f6b-9679-f2b11d92ee79",
+            "actions": [
+                {
+                    "name": "joystick",
+                    "type": "Button",
+                    "id": "1f6dfbc0-557b-4d69-9700-213acd3b101d",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false,
+                    "priority": 0
+                },
+                {
+                    "name": "select",
+                    "type": "Button",
+                    "id": "6b26bc16-2259-470a-8cea-ea7131099ca6",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false,
+                    "priority": 0
+                },
+                {
+                    "name": "west",
+                    "type": "Button",
+                    "id": "5f721444-d78c-4396-9576-7e4b9807e98f",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false,
+                    "priority": 0
+                },
+                {
+                    "name": "start",
+                    "type": "Button",
+                    "id": "83dae758-09e2-4a1f-9949-da892e77a7cf",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false,
+                    "priority": 0
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "cc0331b7-84e1-4185-974a-946eca2f3296",
+                    "path": "<Gamepad>/dpad/down",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "joystick",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "c62b9cb1-4325-4a53-964a-6050840549c9",
+                    "path": "<Gamepad>/start",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "select",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "2ffcc3cb-e9a5-401c-82a2-0dfe255c5b5d",
+                    "path": "<Gamepad>/buttonWest",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "west",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "4c42659e-4754-449e-afbf-d0cb59158da9",
+                    "path": "<HID::16C0-5E1>/button10",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "start",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": []
+}

@@ -16,6 +16,23 @@ public class Script_ressort : MonoBehaviour
     private bool versArrivee = true;
     private float vitesseAllerActuelle;
 
+    private Pinball_input controls;
+
+    void Awake()
+    {
+        controls = new Pinball_input();
+    }
+
+    void OnEnable()
+    {
+        controls.Enable();
+    }
+
+    void OnDisable()
+    {
+        controls.Disable();
+    }
+
     void Start()
     {
         rb = GetComponent<Rigidbody>();
@@ -27,7 +44,8 @@ public class Script_ressort : MonoBehaviour
 
     void Update()
     {
-        if (Keyboard.current.spaceKey.wasPressedThisFrame && !enMouvement)
+        // Accès via la classe Pinball_input, l'action map "inputs" et l'action "joystick" (<Gamepad>/dpad/down)
+        if (controls.inputs.start.WasPressedThisFrame() && !enMouvement)
         {
             enMouvement = true;
             versArrivee = true;
