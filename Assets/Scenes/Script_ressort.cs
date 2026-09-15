@@ -45,10 +45,11 @@ public class Script_ressort : MonoBehaviour
     void Update()
     {
         // Accès via la classe Pinball_input, l'action map "inputs" et l'action "joystick" (<Gamepad>/dpad/down)
-        if (controls.inputs.start.WasPressedThisFrame() && !enMouvement)
+        if (controls.inputs.start.WasPressedThisFrame() || controls.inputs.start1.WasPressedThisFrame() && !enMouvement)
         {
             enMouvement = true;
             versArrivee = true;
+
 
             // Nouvelle vitesse aléatoire à chaque déclenchement
             vitesseAllerActuelle = vitesseAller + Random.Range(-variationVitesse, variationVitesse);

@@ -131,6 +131,16 @@ public partial class @Pinball_input: IInputActionCollection2, IDisposable
                     ""interactions"": """",
                     ""initialStateCheck"": false,
                     ""priority"": 0
+                },
+                {
+                    ""name"": ""start1"",
+                    ""type"": ""Button"",
+                    ""id"": ""2fcaf2df-c2cd-4bb6-84c5-b6bff4855c44"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false,
+                    ""priority"": 0
                 }
             ],
             ""bindings"": [
@@ -177,6 +187,17 @@ public partial class @Pinball_input: IInputActionCollection2, IDisposable
                     ""action"": ""start"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""324ab298-9587-432e-9c0d-5740e1e0d6b0"",
+                    ""path"": ""<HID::xin-mo.com Xinmotek Controller>/button10"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""start1"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -189,6 +210,7 @@ public partial class @Pinball_input: IInputActionCollection2, IDisposable
         m_inputs_select = m_inputs.FindAction("select", throwIfNotFound: true);
         m_inputs_west = m_inputs.FindAction("west", throwIfNotFound: true);
         m_inputs_start = m_inputs.FindAction("start", throwIfNotFound: true);
+        m_inputs_start1 = m_inputs.FindAction("start1", throwIfNotFound: true);
     }
 
     ~@Pinball_input()
@@ -273,6 +295,7 @@ public partial class @Pinball_input: IInputActionCollection2, IDisposable
     private readonly InputAction m_inputs_select;
     private readonly InputAction m_inputs_west;
     private readonly InputAction m_inputs_start;
+    private readonly InputAction m_inputs_start1;
     /// <summary>
     /// Provides access to input actions defined in input action map "inputs".
     /// </summary>
@@ -300,6 +323,10 @@ public partial class @Pinball_input: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "inputs/start".
         /// </summary>
         public InputAction @start => m_Wrapper.m_inputs_start;
+        /// <summary>
+        /// Provides access to the underlying input action "inputs/start1".
+        /// </summary>
+        public InputAction @start1 => m_Wrapper.m_inputs_start1;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -338,6 +365,9 @@ public partial class @Pinball_input: IInputActionCollection2, IDisposable
             @start.started += instance.OnStart;
             @start.performed += instance.OnStart;
             @start.canceled += instance.OnStart;
+            @start1.started += instance.OnStart1;
+            @start1.performed += instance.OnStart1;
+            @start1.canceled += instance.OnStart1;
         }
 
         /// <summary>
@@ -361,6 +391,9 @@ public partial class @Pinball_input: IInputActionCollection2, IDisposable
             @start.started -= instance.OnStart;
             @start.performed -= instance.OnStart;
             @start.canceled -= instance.OnStart;
+            @start1.started -= instance.OnStart1;
+            @start1.performed -= instance.OnStart1;
+            @start1.canceled -= instance.OnStart1;
         }
 
         /// <summary>
@@ -429,5 +462,12 @@ public partial class @Pinball_input: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnStart(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "start1" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnStart1(InputAction.CallbackContext context);
     }
 }

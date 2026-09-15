@@ -45,6 +45,16 @@
                     "interactions": "",
                     "initialStateCheck": false,
                     "priority": 0
+                },
+                {
+                    "name": "start1",
+                    "type": "Button",
+                    "id": "2fcaf2df-c2cd-4bb6-84c5-b6bff4855c44",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false,
+                    "priority": 0
                 }
             ],
             "bindings": [
@@ -89,6 +99,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "start",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "324ab298-9587-432e-9c0d-5740e1e0d6b0",
+                    "path": "<HID::xin-mo.com Xinmotek Controller>/button10",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "start1",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
