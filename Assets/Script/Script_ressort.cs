@@ -9,6 +9,9 @@ public class Script_ressort : MonoBehaviour
     public float vitesseRetour = 1f;
     public Vector3 direction = Vector3.forward;
 
+    public AudioSource audioSource;
+    public AudioClip sonRessort;
+
     private Rigidbody rb;
     private Vector3 positionDepart;
     private Vector3 positionArrivee;
@@ -51,6 +54,11 @@ public class Script_ressort : MonoBehaviour
             enMouvement = true;
             versArrivee = true;
 
+            // Joue le son du ressort au déclenchement
+            if (audioSource != null && sonRessort != null)
+            {
+                audioSource.PlayOneShot(sonRessort);
+            }
 
             // Nouvelle vitesse aléatoire à chaque déclenchement
             vitesseAllerActuelle = vitesseAller + Random.Range(-variationVitesse, variationVitesse);
