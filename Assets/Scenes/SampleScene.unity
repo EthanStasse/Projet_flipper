@@ -1752,7 +1752,7 @@ MonoBehaviour:
   bumperLight: {fileID: 1016038847}
   targetLightIntensity: 20
   hitColor: {r: 1, g: 1, b: 1, a: 1}
-  scaleMultiplier: 1.1
+  scaleMultiplier: 1.2
   transitionUpDuration: 0.05
   transitionDownDuration: 0.2
   bumperVisual: {fileID: 0}
@@ -2693,7 +2693,7 @@ PrefabInstance:
       addedObject: {fileID: 1532612627}
     - targetCorrespondingSourceObject: {fileID: 1405900295115806147, guid: 3f240e654c6b36e48b6f8f888de0e0c2, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1532612626}
+      addedObject: {fileID: 1532612628}
   m_SourcePrefab: {fileID: 100100000, guid: 3f240e654c6b36e48b6f8f888de0e0c2, type: 3}
 --- !u!1 &1532612624 stripped
 GameObject:
@@ -2705,27 +2705,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 1405900295115806146, guid: 3f240e654c6b36e48b6f8f888de0e0c2, type: 3}
   m_PrefabInstance: {fileID: 1532612623}
   m_PrefabAsset: {fileID: 0}
---- !u!135 &1532612626
-SphereCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1532612624}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Radius: 0.6
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &1532612627
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2738,8 +2717,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ad94a69b59509ec4aa6b656c1a212ae6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BumperEffect
-  launchImpulse: 8
-  launchImpulseVariation: 3
+  launchImpulse: 70
+  launchImpulseVariation: 30
   bumperLight: {fileID: 940816395}
   targetLightIntensity: 20
   hitColor: {r: 1, g: 1, b: 1, a: 1}
@@ -2747,6 +2726,33 @@ MonoBehaviour:
   transitionUpDuration: 0.05
   transitionDownDuration: 0.2
   bumperVisual: {fileID: 0}
+--- !u!54 &1532612628
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1532612624}
+  serializedVersion: 5
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!1 &1562961479
 GameObject:
   m_ObjectHideFlags: 0
