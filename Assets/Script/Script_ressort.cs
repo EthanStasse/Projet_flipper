@@ -48,7 +48,10 @@ public class Script_ressort : MonoBehaviour
     void Update()
     {
 
-        if (controls.inputs.start.WasPressedThisFrame() || Keyboard.current.spaceKey.wasPressedThisFrame && !enMouvement)
+        bool lancer = controls.inputs.start.WasPressedThisFrame()
+            || (Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame);
+
+        if (lancer && !enMouvement)
 
         {
             enMouvement = true;
