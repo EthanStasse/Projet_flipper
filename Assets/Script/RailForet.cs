@@ -2,11 +2,10 @@ using System.Collections.Generic;
 using UnityEngine;
 
 // Rampe fine façon "rampe en fils", en bois, générée le long d'une courbe lisse.
-// - l'entrée (partie basse) est pleine, avec un nez en V au bout pour qu'une bille
-//   venant de dessous soit déviée sur le côté au lieu de rester bloquée ;
-// - au-delà, la rampe est faite de rails fins sur pilotis : le dessous est ouvert,
-//   la bille peut passer sous la rampe ;
-// - la sortie se termine en l'air : la bille retombe sur la table.
+// - les deux bouts sont des entrées : parties basses pleines, évasées, avec un nez en V
+//   pour qu'une bille venant de dessous soit déviée sur le côté au lieu de rester bloquée ;
+// - entre les deux, la rampe est faite de rails fins sur pilotis : le dessous est ouvert,
+//   la bille peut passer sous la rampe.
 //
 // L'objet doit avoir la même position / rotation que la table (fond) :
 // en local, y = hauteur au-dessus de la table, x / z = position sur la table.
@@ -32,8 +31,10 @@ public class RailForet : MonoBehaviour
     public float pasLiens = 0.45f;
     public float pasPoteaux = 1.6f;
     public float rayonPoteau = 0.05f;
+    [Tooltip("Pas de pilotis à moins de cette distance des parties pleines (sinon la bille peut se coincer entre les deux).")]
+    public float margePoteaux = 1.3f;
 
-    [Header("Entrée pleine")]
+    [Header("Entrées pleines (aux deux bouts)")]
     [Tooltip("En dessous de cette hauteur, la rampe est pleine (fermée jusqu'à la table).")]
     public float hauteurFermee = 0.68f;
     public float largeurEntree = 1.5f;
@@ -149,64 +150,36 @@ public class RailForet : MonoBehaviour
             av[i] = t.normalized;
             cote[i] = new Vector3(av[i].z, 0f, -av[i].x);
             abs[i] = i == 0 ? 0f : abs[i - 1] + DistXZ(c[i], c[i - 1]);
-            float k = Mathf.Clamp01(abs[i] / Mathf.Max(longueurEntree, 0.01f));
+        }
+        // entrée évasée aux deux bouts
+        for (int i = 0; i < n; i++)
+        {
+            float k = Mathf.Clamp01(Mathf.Min(abs[i], abs[n - 1] - abs[i]) / Mathf.Max(longueurEntree, 0.01f));
             k = k * k * (3f - 2f * k);
             demi[i] = Mathf.Lerp(largeurEntree * 0.5f, ecartGuides, k);
         }
 
-        // fin de la partie pleine : premier point assez haut pour passer dessous
-        int e = 0;
-        while (e < n - 1 && c[e].y < hauteurFermee) e++;
+        // parties pleines aux deux bouts : tant que la piste est trop basse pour passer dessous
+        int debut = 0;
+        while (debut < n - 1 && c[debut].y < hauteurFermee) debut++;
+        int fin = n - 1;
+        while (fin > debut && c[fin].y < hauteurFermee) fin--;
 
         Vector3 up = Vector3.up;
 
-        // ----- entrée pleine -----
-        for (int i = 0; i < e; i++)
-        {
-            int j = i + 1;
-            float hi = Mathf.Max(c[i].y, 0f), hj = Mathf.Max(c[j].y, 0f);
-            Vector3 ci = new Vector3(c[i].x, c[i].y, c[i].z), cj = new Vector3(c[j].x, c[j].y, c[j].z);
-            Vector3 li = cote[i] * demi[i], lj = cote[j] * demi[j];
-
-            int planche = (i / 2) % 2 == 0 ? Claire : Foncee;
-            Quad(ci - li, ci + li, cj + lj, cj - lj, planche, up, true);
-
-            for (int s = -1; s <= 1; s += 2)
-            {
-                Vector3 ai = ci + li * s, aj = cj + lj * s;
-                Vector3 ai0 = new Vector3(ai.x, Sol, ai.z), aj0 = new Vector3(aj.x, Sol, aj.z);
-                Vector3 hautI = ai + up * hauteurGuides, hautJ = aj + up * hauteurGuides;
-                // flanc plein, de la table au haut du bord
-                Quad(ai0, aj0, hautJ, hautI, Rail, (li + lj) * s, true);
-                Quad(ai0, aj0, hautJ, hautI, Rail, -(li + lj) * s, true);
-                // petit rondin sur le bord
-                Tube(hautI, hautJ, rayonRail * 1.3f, 6, Rail);
-            }
-        }
-
-        // nez en V sous la fin de la partie pleine
-        if (e > 0)
-        {
-            Vector3 ce = c[e];
-            Vector3 pointe = ce + av[e] * longueurNez;
-            Vector3 pointe0 = new Vector3(pointe.x, Sol, pointe.z), pointeH = new Vector3(pointe.x, ce.y, pointe.z);
-            for (int s = -1; s <= 1; s += 2)
-            {
-                Vector3 a = ce + cote[e] * demi[e] * s;
-                Vector3 a0 = new Vector3(a.x, Sol, a.z);
-                Vector3 dehors = Vector3.Cross(up, pointe - a).normalized * -s;
-                Quad(a0, pointe0, pointeH, a, Rail, dehors, true);
-                Quad(a0, pointe0, pointeH, a, Rail, -dehors, true);
-            }
-        }
+        PartiePleine(c, cote, demi, 0, debut);
+        PartiePleine(c, cote, demi, fin, n - 1);
+        // nez en V sous le bout haut de chaque partie pleine, pointé vers le dessous de la rampe
+        if (debut > 0) Nez(c[debut], av[debut], cote[debut], demi[debut]);
+        if (fin < n - 1) Nez(c[fin], -av[fin], cote[fin], demi[fin]);
 
         // ----- partie ouverte : rails fins -----
-        float prochainLien = abs[e], prochainPoteau = abs[e];
-        for (int i = e; i < n; i++)
+        float prochainLien = abs[debut], prochainPoteau = abs[debut] + margePoteaux;
+        for (int i = debut; i <= fin; i++)
         {
             Vector3 ci = c[i], li = cote[i];
 
-            if (i < n - 1)
+            if (i < fin)
             {
                 int j = i + 1;
                 Vector3 cj = c[j], lj = cote[j];
@@ -244,7 +217,7 @@ public class RailForet : MonoBehaviour
             }
 
             // pilotis
-            if (abs[i] >= prochainPoteau && ci.y > 0.3f)
+            if (abs[i] >= prochainPoteau && abs[i] <= abs[fin] - margePoteaux && ci.y > 0.3f)
             {
                 prochainPoteau += pasPoteaux;
                 float g = demi[i] + rayonPoteau;
@@ -282,6 +255,50 @@ public class RailForet : MonoBehaviour
             col.convex = false;
             col.sharedMesh = null;
             col.sharedMesh = meshCollision;
+        }
+    }
+
+    // Rampe pleine (plancher + flancs jusqu'à la table) entre les coupes de..a.
+    void PartiePleine(List<Vector3> c, Vector3[] cote, float[] demi, int de, int a)
+    {
+        Vector3 up = Vector3.up;
+        for (int i = de; i < a; i++)
+        {
+            int j = i + 1;
+            Vector3 ci = c[i], cj = c[j];
+            Vector3 li = cote[i] * demi[i], lj = cote[j] * demi[j];
+
+            int planche = (i / 2) % 2 == 0 ? Claire : Foncee;
+            Quad(ci - li, ci + li, cj + lj, cj - lj, planche, up, true);
+
+            for (int s = -1; s <= 1; s += 2)
+            {
+                Vector3 ai = ci + li * s, aj = cj + lj * s;
+                Vector3 ai0 = new Vector3(ai.x, Sol, ai.z), aj0 = new Vector3(aj.x, Sol, aj.z);
+                Vector3 hautI = ai + up * hauteurGuides, hautJ = aj + up * hauteurGuides;
+                // flanc plein, de la table au haut du bord (visible des deux côtés)
+                Quad(ai0, aj0, hautJ, hautI, Rail, (li + lj) * s, true);
+                Quad(ai0, aj0, hautJ, hautI, Rail, -(li + lj) * s, false);
+                // petit rondin sur le bord
+                Tube(hautI, hautJ, rayonRail * 1.3f, 6, Rail);
+            }
+        }
+    }
+
+    // Nez en V qui ferme le dessous de la partie pleine : une bille venant de sous la rampe
+    // tape une face en biais et part sur le côté au lieu de rester bloquée.
+    void Nez(Vector3 ce, Vector3 vers, Vector3 cote, float demi)
+    {
+        Vector3 up = Vector3.up;
+        Vector3 pointe = ce + vers.normalized * longueurNez;
+        Vector3 pointe0 = new Vector3(pointe.x, Sol, pointe.z), pointeH = new Vector3(pointe.x, ce.y, pointe.z);
+        for (int s = -1; s <= 1; s += 2)
+        {
+            Vector3 a = ce + cote * demi * s;
+            Vector3 a0 = new Vector3(a.x, Sol, a.z);
+            Vector3 dehors = Vector3.Cross(up, pointe - a).normalized;
+            Quad(a0, pointe0, pointeH, a, Rail, dehors, true);
+            Quad(a0, pointe0, pointeH, a, Rail, -dehors, false);
         }
     }
 
