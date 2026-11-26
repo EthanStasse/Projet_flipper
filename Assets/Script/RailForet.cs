@@ -12,7 +12,8 @@ using UnityEngine;
 // Garder la partie ouverte à plus de ~0.75 de haut pour que la bille passe dessous.
 //
 // Matériaux du MeshRenderer : 0 planche claire, 1 planche foncée, 2 rails / flancs, 3 poteaux.
-// Le MeshCollider reçoit une forme simplifiée (piste lisse + bords), pas les rails visuels.
+// Le MeshCollider reçoit une surface de collision continue (piste lisse, bords, toit, parties
+// pleines) ; les pilotis ont des cylindres de collision cachés.
 [ExecuteAlways]
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
 public class RailForet : MonoBehaviour
@@ -25,7 +26,11 @@ public class RailForet : MonoBehaviour
     public float ecartRails = 0.17f;
     [Tooltip("Demi-écart des rails de guidage (doit rester > rayon de la bille, 0.29).")]
     public float ecartGuides = 0.36f;
-    public float hauteurGuides = 0.3f;
+    public float hauteurGuides = 0.5f;
+    [Tooltip("Toit en fil au-dessus de la bille : elle ne peut plus sauter hors de la rampe.")]
+    public bool toit = true;
+    [Tooltip("Hauteur du toit au-dessus de la piste (la bille fait 0.58).")]
+    public float hauteurToit = 0.95f;
     public float rayonRail = 0.035f;
     public float rayonLien = 0.022f;
     public float pasLiens = 0.45f;
@@ -50,9 +55,13 @@ public class RailForet : MonoBehaviour
     // maillage visible
     List<Vector3> verts, normales;
     List<int>[] tris;
-    // maillage de collision
+    // collisions : petites boîtes (et cylindres pour les pilotis) générées le long de la rampe
+    // collisions : une surface continue (plaques fines, sans marches) + cylindres pour les pilotis
     List<Vector3> cVerts;
     List<int> cTris;
+    struct Cylindre { public Vector3 a, b; public float r; }
+    List<Cylindre> cylindres;
+    const string NomCollisions = "collisions_rampe (générées)";
 
     Mesh mesh, meshCollision;
     bool aRegenerer = true;
@@ -136,6 +145,7 @@ public class RailForet : MonoBehaviour
         for (int i = 0; i < 4; i++) tris[i] = new List<int>();
         cVerts = new List<Vector3>();
         cTris = new List<int>();
+        cylindres = new List<Cylindre>();
 
         List<Vector3> c = Echantillonner();
         int n = c.Count;
@@ -192,16 +202,25 @@ public class RailForet : MonoBehaviour
                     Tube(ci + li * gi * s + up * hauteurGuides, cj + lj * gj * s + up * hauteurGuides, rayonRail, 6, Rail);
                     Tube(ci + li * gi * s + up * hauteurGuides * 0.45f, cj + lj * gj * s + up * hauteurGuides * 0.45f, rayonRail * 0.8f, 5, Rail);
                 }
+                if (toit)
+                    Tube(ci + up * hauteurToit, cj + up * hauteurToit, rayonRail, 6, Rail);
 
                 // collision : piste lisse sous la bille + deux bords verticaux
-                float y = -(0.29f - Mathf.Sqrt(0.29f * 0.29f - ecartRails * ecartRails)) + rayonRail;
+                float y = NiveauPiste();
                 Vector3 pi = ci + up * y, pj = cj + up * y;
                 float lp = ecartRails + 0.04f;
-                QuadCollision(pi - li * lp, pi + li * lp, pj + lj * lp, pj - lj * lp);
+                QuadCollision(pi - li * lp, pi + li * lp, pj + lj * lp, pj - lj * lp, up);
                 foreach (float s in new[] { -1f, 1f })
                 {
                     Vector3 bi = ci + li * (gi - rayonRail) * s, bj = cj + lj * (gj - rayonRail) * s;
-                    QuadCollision(bi + up * y, bj + up * y, bj + up * (hauteurGuides + rayonRail), bi + up * (hauteurGuides + rayonRail));
+                    float hautBord = toit ? hauteurToit : hauteurGuides + rayonRail;
+                    QuadCollision(bi + up * y, bj + up * y, bj + up * hautBord, bi + up * hautBord, -li * s);
+                }
+                if (toit)
+                {
+                    // toit : empêche la bille de quitter la rampe par le haut (face vers le bas)
+                    Vector3 ti = ci + up * (hauteurToit - rayonRail), tj = cj + up * (hauteurToit - rayonRail);
+                    QuadCollision(ti - li * gi, ti + li * gi, tj + lj * gj, tj - lj * gj, -up);
                 }
             }
 
@@ -213,7 +232,12 @@ public class RailForet : MonoBehaviour
                 Vector3 bas = ci - up * (rayonRail + rayonLien);
                 Tube(bas - li * g, bas + li * g, rayonLien, 5, Claire);
                 foreach (float s in new[] { -1f, 1f })
+                {
                     Tube(bas + li * g * s, ci + li * g * s + up * hauteurGuides, rayonLien, 5, Claire);
+                    // arceau jusqu'au rail du toit
+                    if (toit)
+                        Tube(ci + li * g * s + up * hauteurGuides, ci + up * hauteurToit, rayonLien, 5, Claire);
+                }
             }
 
             // pilotis
@@ -252,10 +276,68 @@ public class RailForet : MonoBehaviour
             meshCollision.SetTriangles(cTris, 0);
             meshCollision.RecalculateNormals();
             meshCollision.RecalculateBounds();
+            col.enabled = true;
             col.convex = false;
             col.sharedMesh = null;
             col.sharedMesh = meshCollision;
+            // rampe glissante (comme les rampes en fil d'un vrai flipper) : sans ça, la bille
+            // frotte contre les bords dans les virages et perd presque toute sa vitesse
+            col.sharedMaterial = MateriauGlissant();
         }
+        ConstruireCollisions();
+    }
+
+    static PhysicsMaterial materiauGlissant;
+
+    static PhysicsMaterial MateriauGlissant()
+    {
+        if (materiauGlissant == null)
+        {
+            materiauGlissant = new PhysicsMaterial("Rampe glissante")
+            {
+                dynamicFriction = 0.02f,
+                staticFriction = 0.02f,
+                bounciness = 0f,
+                frictionCombine = PhysicsMaterialCombine.Minimum,
+                bounceCombine = PhysicsMaterialCombine.Minimum,
+                hideFlags = HideFlags.DontSave
+            };
+        }
+        return materiauGlissant;
+    }
+
+    void ConstruireCollisions()
+    {
+        for (int k = transform.childCount - 1; k >= 0; k--)
+        {
+            Transform t = transform.GetChild(k);
+            if (t.name == NomCollisions)
+                Detruire(t.gameObject);
+        }
+
+        var conteneur = new GameObject(NomCollisions) { hideFlags = HideFlags.HideAndDontSave };
+        conteneur.layer = gameObject.layer;
+        conteneur.transform.SetParent(transform, false);
+
+        foreach (Cylindre cy in cylindres)
+        {
+            var go = new GameObject("p") { hideFlags = HideFlags.HideAndDontSave };
+            go.layer = gameObject.layer;
+            go.transform.SetParent(conteneur.transform, false);
+            go.transform.localPosition = (cy.a + cy.b) * 0.5f;
+            go.transform.localRotation = Quaternion.FromToRotation(Vector3.up, cy.b - cy.a);
+            var cap = go.AddComponent<CapsuleCollider>();
+            cap.sharedMaterial = MateriauGlissant();
+            cap.radius = cy.r;
+            cap.height = (cy.b - cy.a).magnitude + 2f * cy.r;
+            cap.direction = 1;
+        }
+    }
+
+    // Niveau de la piste de collision par rapport à la courbe : la bille touche les deux rails.
+    float NiveauPiste()
+    {
+        return -(0.29f - Mathf.Sqrt(0.29f * 0.29f - ecartRails * ecartRails)) + rayonRail;
     }
 
     // Rampe pleine (plancher + flancs jusqu'à la table) entre les coupes de..a.
@@ -265,7 +347,7 @@ public class RailForet : MonoBehaviour
         for (int i = de; i < a; i++)
         {
             int j = i + 1;
-            Vector3 ci = c[i], cj = c[j];
+            Vector3 ci = c[i] + up * NiveauPiste(), cj = c[j] + up * NiveauPiste();
             Vector3 li = cote[i] * demi[i], lj = cote[j] * demi[j];
 
             int planche = (i / 2) % 2 == 0 ? Claire : Foncee;
@@ -277,10 +359,22 @@ public class RailForet : MonoBehaviour
                 Vector3 ai0 = new Vector3(ai.x, Sol, ai.z), aj0 = new Vector3(aj.x, Sol, aj.z);
                 Vector3 hautI = ai + up * hauteurGuides, hautJ = aj + up * hauteurGuides;
                 // flanc plein, de la table au haut du bord (visible des deux côtés)
-                Quad(ai0, aj0, hautJ, hautI, Rail, (li + lj) * s, true);
+                Quad(ai0, aj0, hautJ, hautI, Rail, (li + lj) * s, false);
                 Quad(ai0, aj0, hautJ, hautI, Rail, -(li + lj) * s, false);
+                // collision du flanc au même écart que les bords de la partie en rails
+                // (sinon petite marche au raccord, la bille tape dedans dans les virages)
+                Vector3 ki = cote[i] * (demi[i] - rayonRail) * s, kj = cote[j] * (demi[j] - rayonRail) * s;
+                Vector3 bi = c[i] + ki, bj = c[j] + kj;
+                float hautBord = toit ? hauteurToit : hauteurGuides + rayonRail;
+                QuadCollision(new Vector3(bi.x, Sol, bi.z), new Vector3(bj.x, Sol, bj.z), bj + up * hautBord, bi + up * hautBord, -ki);
                 // petit rondin sur le bord
                 Tube(hautI, hautJ, rayonRail * 1.3f, 6, Rail);
+            }
+            if (toit)
+            {
+                // toit invisible : la bille ne peut pas sauter par-dessus les flancs
+                Vector3 ti = c[i] + up * (hauteurToit - rayonRail), tj = c[j] + up * (hauteurToit - rayonRail);
+                QuadCollision(ti - li, ti + li, tj + lj, tj - lj, -up);
             }
         }
     }
@@ -291,10 +385,12 @@ public class RailForet : MonoBehaviour
     {
         Vector3 up = Vector3.up;
         Vector3 pointe = ce + vers.normalized * longueurNez;
-        Vector3 pointe0 = new Vector3(pointe.x, Sol, pointe.z), pointeH = new Vector3(pointe.x, ce.y, pointe.z);
+        float haut = ce.y + NiveauPiste() - 0.12f; // reste sous la piste
+        Vector3 pointe0 = new Vector3(pointe.x, Sol, pointe.z), pointeH = new Vector3(pointe.x, haut, pointe.z);
         for (int s = -1; s <= 1; s += 2)
         {
             Vector3 a = ce + cote * demi * s;
+            a.y = haut;
             Vector3 a0 = new Vector3(a.x, Sol, a.z);
             Vector3 dehors = Vector3.Cross(up, pointe - a).normalized;
             Quad(a0, pointe0, pointeH, a, Rail, dehors, true);
@@ -327,30 +423,48 @@ public class RailForet : MonoBehaviour
 
     void TubeCollision(Vector3 a, Vector3 b, float r, int seg)
     {
-        Repere(b - a, out Vector3 u, out Vector3 v);
-        for (int k = 0; k < seg; k++)
-        {
-            float t0 = k * Mathf.PI * 2f / seg, t1 = (k + 1) * Mathf.PI * 2f / seg;
-            Vector3 o0 = (u * Mathf.Cos(t0) + v * Mathf.Sin(t0)) * r;
-            Vector3 o1 = (u * Mathf.Cos(t1) + v * Mathf.Sin(t1)) * r;
-            QuadCollision(a + o0, a + o1, b + o1, b + o0);
-        }
+        cylindres.Add(new Cylindre { a = a, b = b, r = r });
     }
 
     void Quad(Vector3 a, Vector3 b, Vector3 c, Vector3 d, int mat, Vector3 dir, bool collision)
     {
         Tri(a, b, c, mat, dir);
         Tri(a, c, d, mat, dir);
-        if (collision) QuadCollision(a, b, c, d);
+        if (collision) QuadCollision(a, b, c, d, dir);
     }
 
-    // Les MeshColliders non convexes testent les deux faces : l'orientation n'a pas d'importance.
-    void QuadCollision(Vector3 a, Vector3 b, Vector3 c, Vector3 d)
+    // Face de collision solide des deux côtés : une plaque fine (deux faces parallèles tournées
+    // vers l'extérieur). Ne jamais mettre deux triangles opposés au même endroit : le moteur
+    // physique crée alors des contacts contradictoires qui freinent ou bloquent la bille.
+    const float DemiEpaisseurCollision = 0.02f;
+
+    void QuadCollision(Vector3 a, Vector3 b, Vector3 c, Vector3 d, Vector3 dir)
+    {
+        Vector3 n = Vector3.Cross(b - a, c - a);
+        if (n.sqrMagnitude < 1e-12f) n = Vector3.Cross(c - a, d - a);
+        if (n.sqrMagnitude < 1e-12f) return;
+        n.Normalize();
+        if (Vector3.Dot(n, dir) < 0f) n = -n;
+        // la face côté "dir" reste exactement sur le quadrilatère, l'épaisseur part de l'autre côté
+        Vector3 e = n * (2f * DemiEpaisseurCollision);
+        FaceCollision(a, b, c, d, n);
+        FaceCollision(a - e, b - e, c - e, d - e, -n);
+    }
+
+    void FaceCollision(Vector3 a, Vector3 b, Vector3 c, Vector3 d, Vector3 dir)
     {
         int i0 = cVerts.Count;
         cVerts.Add(a); cVerts.Add(b); cVerts.Add(c); cVerts.Add(d);
-        cTris.Add(i0); cTris.Add(i0 + 1); cTris.Add(i0 + 2);
-        cTris.Add(i0); cTris.Add(i0 + 2); cTris.Add(i0 + 3);
+        if (Vector3.Dot(Vector3.Cross(b - a, c - a), dir) >= 0f)
+        {
+            cTris.Add(i0); cTris.Add(i0 + 1); cTris.Add(i0 + 2);
+            cTris.Add(i0); cTris.Add(i0 + 2); cTris.Add(i0 + 3);
+        }
+        else
+        {
+            cTris.Add(i0); cTris.Add(i0 + 2); cTris.Add(i0 + 1);
+            cTris.Add(i0); cTris.Add(i0 + 3); cTris.Add(i0 + 2);
+        }
     }
 
     // Triangle à facette plate, tourné vers "dir".

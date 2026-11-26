@@ -27,6 +27,9 @@ public class BilleAntiBlocage : MonoBehaviour
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
+        // la bille ne doit jamais "s'endormir" (mise en veille du moteur physique) :
+        // sinon elle peut rester figée sur une pente douce, par exemple en haut de la rampe
+        rb.sleepThreshold = 0f;
     }
 
     void FixedUpdate()
