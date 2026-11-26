@@ -34,7 +34,7 @@ public class RailForet : MonoBehaviour
     public float rayonRail = 0.035f;
     public float rayonLien = 0.022f;
     public float pasLiens = 0.45f;
-    public float pasPoteaux = 1.6f;
+    public float pasPoteaux = 3.2f;
     public float rayonPoteau = 0.05f;
     [Tooltip("Pas de pilotis à moins de cette distance des parties pleines (sinon la bille peut se coincer entre les deux).")]
     public float margePoteaux = 1.3f;
@@ -224,10 +224,12 @@ public class RailForet : MonoBehaviour
                 }
             }
 
-            // liens en U
-            if (abs[i] >= prochainLien)
+            bool poteau = abs[i] >= prochainPoteau && abs[i] <= abs[fin] - margePoteaux && ci.y > 0.3f;
+
+            // liens en U (toujours un lien là où il y a des pilotis, pour qu'ils tiennent la rampe)
+            if (abs[i] >= prochainLien || poteau)
             {
-                prochainLien += pasLiens;
+                if (abs[i] >= prochainLien) prochainLien += pasLiens;
                 float g = demi[i];
                 Vector3 bas = ci - up * (rayonRail + rayonLien);
                 Tube(bas - li * g, bas + li * g, rayonLien, 5, Claire);
@@ -240,17 +242,20 @@ public class RailForet : MonoBehaviour
                 }
             }
 
-            // pilotis
-            if (abs[i] >= prochainPoteau && abs[i] <= abs[fin] - margePoteaux && ci.y > 0.3f)
+            // pilotis : de la table jusqu'au rail de guidage, collés au lien en U de chaque côté
+            if (poteau)
             {
                 prochainPoteau += pasPoteaux;
                 float g = demi[i] + rayonPoteau;
                 foreach (float s in new[] { -1f, 1f })
                 {
-                    Vector3 haut = ci + li * g * s - up * (rayonRail + rayonLien * 2f);
+                    Vector3 haut = ci + li * g * s + up * hauteurGuides;
                     Vector3 bas = new Vector3(haut.x, Sol, haut.z);
                     Tube(bas, haut, rayonPoteau, 6, Poteau);
                     TubeCollision(bas, haut, rayonPoteau, 6);
+                    // petite traverse qui relie le pilotis au bas de la rampe
+                    Vector3 pied = ci - up * (rayonRail + rayonLien);
+                    Tube(pied + li * demi[i] * s, new Vector3(haut.x, pied.y, haut.z), rayonLien * 1.4f, 5, Poteau);
                 }
             }
         }

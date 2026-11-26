@@ -6448,7 +6448,7 @@ MonoBehaviour:
   rayonRail: 0.035
   rayonLien: 0.022
   pasLiens: 0.45
-  pasPoteaux: 1.6
+  pasPoteaux: 3.2
   rayonPoteau: 0.05
   margePoteaux: 1.3
   hauteurFermee: 0.68
